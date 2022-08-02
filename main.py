@@ -2,6 +2,7 @@ import re
 from pprint import pprint
 import csv
 import pandas
+import itertools
 
 def _get_name(list_contact):
   template_name = re.compile(r"(\'|\"){0,1}([а-яё]{3,})(\'|\"){0,1}", re.I)
@@ -67,9 +68,9 @@ def _get_contacts(list_contact):
 
   for pos_var in list_contact:
     new_pos = str(pos_var[5:6][0])
-    print(new_pos)
-    new_new_pos = template_tel.sub('+7(\2)\3-\5-\6, \7 \9', new_pos)
-    print(new_new_pos)
+    # print(new_pos)
+    new_new_pos = template_tel.sub(r'+7(\2)\3-\5-\6, \7 \9', new_pos)
+    # print(new_new_pos)
     tel.append(new_new_pos)
 
   for pos_var in list_contact:
@@ -108,29 +109,108 @@ def get_dictionary_name(list_contact):
   return lists
 
 
+def delete_dubl(book):
+  i = []
+  dict_duplicates = {'lastname', 'firstname', 'surname'}
+  for colunm in ['lastname', 'firstname', 'surname']:
+    g = (book[book[str(colunm)].duplicated() == True])
+    # print(g)
+    for col_name in list(g.keys())[:3]:
+      for name_var in list(g[col_name]):
+        if name_var != None:
+          i.append(list(book[book[col_name] == name_var].index))
+
+  unic_list = []
+  for unic_var in i:
+    for num_var in unic_var:
+      unic_list.append(num_var)
+
+  i = 0
+  len_unic_list = len(unic_list)
+
+  while True:
+    if i == len_unic_list:
+      break
+    for int_var in unic_list:
+      if unic_list.count(int_var) > 1:
+        unic_list.remove(int_var)
+
+    i += 1
+
+  # unic_list
+
+  i = 0
+
+  indexes_copy = []
+  for index_var in range(len(unic_list)):
+    if index_var / 2 % 1 == 0:
+
+      index_1 = unic_list[index_var]
+      index_2 = index_1 + 1
+
+      index_3 = unic_list[index_var + 1]
+
+      index_4 = index_3 + 1
+
+      copy_str_book_first = ((book[index_1:index_1 + 1]).copy()).values[0]
+      copy_str_book_two = ((book[index_3:index_3 + 1]).copy()).values[0]
+
+      copy_str_book_keys = list(book.keys())
 
 
+      i = 0
+      for copy_str_first_volume in copy_str_book_first:
+
+        copy_str_two_volume = copy_str_book_two[i]
+        if copy_str_first_volume == copy_str_two_volume:
+          pass
+
+        elif copy_str_first_volume != copy_str_two_volume:
+
+          if copy_str_first_volume == None or copy_str_first_volume == "":
+            copy_str_first_volume = str(copy_str_first_volume) + " " + str(copy_str_two_volume)
+
+            copy_str_volume = str(copy_str_first_volume).strip(" ")
+
+          elif copy_str_two_volume == None or copy_str_two_volume == "":
+            copy_str_two_volume = str(copy_str_two_volume) + " " + str(copy_str_first_volume)
+
+            copy_str_volume = str(copy_str_two_volume).strip(" ")
+
+          book[list(book.keys())[i]][unic_list[index_var]] = copy_str_volume
+          book[list(book.keys())[i]][unic_list[index_var + 1]] = 'Delete'
+          book[list(book.keys())[i]][unic_list[index_var]]
+
+          # break
+        i += 1
+        if i > len(copy_str_book_two):
+          print("222")
+          exit()
+
+    elif index_var / 2 % 1 != 0:
+      indexes_copy.append(unic_list[index_var])
+
+  print("__ __")
+
+  g = (book.loc[book['phone'] != 'Delete'])
+  print((g).to_csv('file/not+duble.csv'))
 
 
 if __name__ == ('__main__'):
   with open('file/phonebook_raw.csv', encoding="utf-8") as f:
     r_file = csv.reader(f, delimiter=",")
     list_contact = list(r_file)[1:]
-    # print(len(list_contact))
-    # pprint(list_contact)
-    # pprint((list_contact[0])[0:3])
-    # t = str((list_contact[1][:3]))
 
 
-  print("________________________________")
+
   contact_book = get_dictionary_name(list_contact)
-  # pprint(f"{contact_book}")
 
   book = pandas.DataFrame(contact_book)[['lastname', 'firstname', 'surname', 'organization', 'position', 'phone']]
-  print(book)
+
   book.to_csv('file/book.csv')
 
-    # print(f"000: {list_contact[0]}")
+  delete_dubl(book)
+
 
 # "((\+7|7|8)?(\s*|-)*(\(\d{1,}\)*|\d*)\s*(\d*)[-\s]*(\d*)*[-\s*]*(\d*)*)[-\s]*[\(*\s|\(*,\s]\({,1}(\w{,3}\.{,1})\s*(\w*)\){,1}"g
 #
