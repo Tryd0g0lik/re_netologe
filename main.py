@@ -22,7 +22,6 @@ def _get_name(list_contact):
   return get_list_name
 
 def _saerch_lastname(slf_var):
-  # print(f"slf_var_: {slf_var}")
 
   template_lastname = re.compile(r"([а-яё]+(ич|на))", re.I)
   template_var = (template_lastname.findall(str(slf_var)))
@@ -39,49 +38,46 @@ def _get_organisation(list_contact):
     new_org = org_var[3:4][0]
 
     org.append(new_org)
-  # print(org)
+
   return org
 
 def _get_position(list_contact):
   pos = []
+
   for posit_var in list_contact:
-    v = str(posit_var[4: 5][0]).split(" ")
+    v = str(posit_var[4: 5][0])
+    p = None
+
     if len(v) > 1:
-      p = v[0] + " " + v[1]
+      p = v
 
-    if len(v) == 1:
-      p = v[0]
-
-    # print(p)
-    # new_pos = posit_var[4:5][0]
+    elif len(v) == 1:
+      p = v
 
     pos.append(p)
-  # print(pos)
+
   return pos
 
 def _get_contacts(list_contact):
   tel = []
   email = []
-  # template_tel = re.compile(r"[^\s,\.]?\+?([7|8]{1})([\s-])?(\()?(\d{3})\)?[\s-]?(\d{3})[-\s]?(\d{2})[-\S]?(\d{2})[\s,]\(?(доб.)?\s?(\d*)(\d){0,1}")
   template_tel = re.compile(r"[^\s,\.']?\+?([7|8])\s?\(?(\d{3})\)?[-\s]?(\d{3})(-)?(\d{2})-?(\d{2})\s?\(?(доб.)?(\s*)?(\d{2,})?\)?")
 
 
   for pos_var in list_contact:
     new_pos = str(pos_var[5:6][0])
-    # print(new_pos)
     new_new_pos = template_tel.sub(r'+7(\2)\3-\5-\6, \7 \9', new_pos)
-    # print(new_new_pos)
     tel.append(new_new_pos)
 
   for pos_var in list_contact:
     new_pos = pos_var[6:7][0]
 
     email.append(new_pos)
-  # print(pos)
+
   return [tel, email]
 
 def get_dictionary_name(list_contact):
-  # print(f"0:_ {_get_name(list_contact)}")
+
   lastname_var = []
   firstname_var = []
   surname_var = []
@@ -106,15 +102,17 @@ def get_dictionary_name(list_contact):
   lists = {headers[0] : lastname_var, headers[1] : firstname_var, headers[2] : surname_var,\
            headers[3] : organisation_var, headers[4] : position_var, headers[5] : tel_var,\
            headers[6] : email_var}
+
   return lists
 
 
 def delete_dubl(book):
   i = []
-  dict_duplicates = {'lastname', 'firstname', 'surname'}
+
   for colunm in ['lastname', 'firstname', 'surname']:
     g = (book[book[str(colunm)].duplicated() == True])
-    # print(g)
+
+    # client's data save
     for col_name in list(g.keys())[:3]:
       for name_var in list(g[col_name]):
         if name_var != None:
@@ -137,7 +135,6 @@ def delete_dubl(book):
 
     i += 1
 
-  # unic_list
 
   i = 0
 
@@ -193,7 +190,7 @@ def delete_dubl(book):
   print("__ __")
 
   g = (book.loc[book['phone'] != 'Delete'])
-  print((g).to_csv('file/not+duble.csv'))
+  print((g).to_csv('file/not_duble.csv'))
 
 
 if __name__ == ('__main__'):
@@ -205,17 +202,8 @@ if __name__ == ('__main__'):
 
   contact_book = get_dictionary_name(list_contact)
 
-  book = pandas.DataFrame(contact_book)[['lastname', 'firstname', 'surname', 'organization', 'position', 'phone']]
+  book = pandas.DataFrame(contact_book)[['lastname', 'firstname', 'surname', 'organization', 'position', 'phone', 'email']]
 
   book.to_csv('file/book.csv')
 
   delete_dubl(book)
-
-
-# "((\+7|7|8)?(\s*|-)*(\(\d{1,}\)*|\d*)\s*(\d*)[-\s]*(\d*)*[-\s*]*(\d*)*)[-\s]*[\(*\s|\(*,\s]\({,1}(\w{,3}\.{,1})\s*(\w*)\){,1}"g
-#
-# "((\+7|7|8)?(\s|-)*(\(\d{1,}\)|\d*)\s*\d*[-\s]*(\d*)[-\s*]*(\d*))[-\s]*[(\(\s)|(\(,\s)]\({,1}((доб){,1}\.{,1}){,1}\s*[^,]\w*\){,1}"g
-# "[^\s,]((\+7|7|8)?(\s|-)*(\(\d{1,}\)|\d*)\s*\d*[-\s]*(\d*)[-\s*]*(\d*))[-\s]*[(\(\s)|(\(,\s)]\({,1}((доб){,1}\.{,1}){,1}\s*[^,]\d*\){,1}"g
-#
-# "[^\s,]((\+7|7|8)?(\s|-)*(\(\d{1,}\)|\d*)\s*\d*[-\s]*(\d*)[-\s*]*(\d*))[-\s]*\(*[(,\s?)|\s?](\(*(доб){,1}\.{,1}\)*){,1}\s*[^,]\d*\){,1}[^,\s]"g
-# "([^\s,\.][\+7|\s8]*[\s-]*)?\(*(\d{3,})\)?[-\s]*(\d*)[\s-]+(\d*)[\s-](\d{,3}[^,])(\({0,1}(доб)?\.\s(\d+)\){,1}){,1}[^,\s]"g
